@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
-const nodemailer = require('nodemailer');
 const cors = require('cors');
+const sgMail = require('@sendgrid/mail');
 
 const allowedOrigins = ['http://localhost:4200'];
 
@@ -9,37 +9,30 @@ app.use(cors({
     origin: allowedOrigins
 }));
 
+// Set SendGrid API key
+sgMail.setApiKey('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');
+
 app.use(express.json());
 
 app.post('/send-email', (req, res) => {
     const { to, text } = req.body;
 
-    const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: 'uptheswagswag@gmail.com',
-            pass: '0725544988'
-        }
-    });
-
-    console.log(to, text)
-
-    const mailOptions = {
-        from: 'uptheswagswag@gmail.com',
-        to,
+    const msg = {
+        to: to,
+        from: 'mxolisi1025@gmail.com', // replace with your own email address
         subject: 'Submission data',
-        text
+        text: text,
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            console.log(error);
-            res.status(500).send('Error sending email');
-        } else {
-            console.log('Email sent: ' + info.response);
+    sgMail.send(msg)
+        .then(() => {
+            console.log('Email sent successfully');
             res.status(200).send('Email sent successfully');
-        }
-    });
+        })
+        .catch((error) => {
+            console.error(error);
+            res.status(500).send('Error sending email');
+        });
 });
 
 app.get('/', (req, res) => {
